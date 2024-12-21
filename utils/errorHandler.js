@@ -17,5 +17,8 @@ class ErrorHandler extends Error {
 //this.statusCode is used to set the status code of the error
 
 
+// const errorExample = new ErrorHandler("This is an error message" , 404);
+// console.log(errorExample.message , errorExample.statusCode); //This is an error message
+
 //exporting the ErrorHandler class
 export {ErrorHandler};
