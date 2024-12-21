@@ -94,7 +94,15 @@ export const logoutController = TryCatch(
 
 //search the user controller
 export const searchUserController = TryCatch(
+    
     async (req , resp , next)=>{
+
+        const {name} = req.query;
+
+        return resp.status(200).json({
+            success:true,
+            message:`Searching for ${name}`
+        })
 
     }
 )

@@ -3,10 +3,13 @@ import  {dbConnect} from './utils/database.js'
 import dotenv from "dotenv"
 import { errorMiddleware } from "./middlewares/error.js";
 import cookieParser from "cookie-parser";
+import { createUser } from "./seeders/user.js";
 
 
 //importing the routes
 import userRoutes from "./routes/user.routes.js";
+import chatRoutes from "./routes/chat.routes.js";
+
 
 
 dotenv.config({
@@ -26,6 +29,10 @@ app.use(cookieParser());
 dbConnect(process.env.MONGO_URI);
 
 
+//creating fake users
+// createUser(10);  //use only when use to cvreate fake users
+
+
 // app.get("/" , (req , resp)=>{
 //     resp.send("Hello World");
 // })
@@ -33,6 +40,7 @@ dbConnect(process.env.MONGO_URI);
 
 //mounting the router
 app.use("/user" , userRoutes);
+app.use("/chat" , chatRoutes);
 
 
 
