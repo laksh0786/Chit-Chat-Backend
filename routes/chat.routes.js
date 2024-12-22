@@ -6,17 +6,22 @@ const router = express.Router();
 
 
 //importing the controller
-import {newGroupChatController , getMyChatsController, getMyGroupsController , addGroupMembersController} from "../controllers/chat.controllers.js";
+import {newGroupChatController , getMyChatsController, getMyGroupsController , addGroupMembersController, removeGroupMemberController} from "../controllers/chat.controllers.js";
 
 
 
 //creating the routes
 router.use(isAuth);
+
 router.post("/new-group-chat" , newGroupChatController); 
+
 router.get("/get-my-chats" , getMyChatsController);
+
 router.get("/get-my-chats/groups" , getMyGroupsController);
+
 router.put("/add-members" , addGroupMembersController);
 
+router.put("/remove-member" , removeGroupMemberController);
 
 
 
