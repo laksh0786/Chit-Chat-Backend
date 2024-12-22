@@ -222,6 +222,11 @@ const removeGroupMemberController = TryCatch(
             return next(new ErrorHandler("Group must have atleast 3 members", 400));
         }
 
+        //if user is not in the chat then throw an error
+        if (!chat.members.includes(userId)) {
+            return next(new ErrorHandler("User is not in the group", 400));
+        }
+
 
         //removing the member from the chat
         chat.members = chat.members.filter((member) => member.toString() !== userId);
@@ -244,6 +249,18 @@ const removeGroupMemberController = TryCatch(
 
     }
 )
+
+
+
+
+//send attachment controller
+
+
+
+//get messages controller
+
+
+//get chat details , rename , delete controller
 
 
 export { newGroupChatController, getMyChatsController, getMyGroupsController, addGroupMembersController, removeGroupMemberController };
