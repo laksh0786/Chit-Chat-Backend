@@ -395,6 +395,41 @@ const sendAttachmentController = TryCatch(
 
 
 //get messages controller
+const getMessagesController = TryCatch(
+    async (req , resp , next)=>{
+
+        const chatId = req.params.id;
+
+        const {page = 1} = req.query;
+        
+        const result_per_page = 20 ;
+        
+        const skip = (page-1)*result_per_page;
+
+        const [messages , totalMessagesCount ] = await Promise.all([
+
+            Message.find({chat:chatId})
+            .sort({createdAt:-1})   //sorting the messages in descending order of createdAt. Latest show first
+            .skip(skip) //skip the messages that are already shown in the previous page
+            .limit(result_per_page) //how many messages to be shown in a page
+            .populate("sender" , "name avatar") //populate the sender field with name and avatar
+            .lean() , //lean method to convert the mongoose document to plain javascript object
+
+            Message.countDocuments({chat:chatId}) //count the total number of messages in the chat
+            
+        ])
+
+        const totalPages = Math.ceil(totalMessagesCount / result_per_page) || 0;  //total number of pages required to show all the messages
+
+        return resp.status(200).json({
+            success:true,
+            messages:messages.reverse(),
+            totalPages
+        })
+
+    }
+)
+
 
 
 //get chat details 
@@ -557,6 +592,7 @@ export {
     removeGroupMemberController,
     leaveGroupChatController,
     sendAttachmentController,
+    getMessagesController,
     getChatDetailsController,
     renameGroupChatController,
     deleteChatController

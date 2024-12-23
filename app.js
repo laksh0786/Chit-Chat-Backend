@@ -9,6 +9,7 @@ import { createUser } from "./seeders/user.js";
 //importing the routes
 import userRoutes from "./routes/user.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
+import { createGroupChats, createMessagesInAChat, createSingleChats } from "./seeders/chat.js";
 
 
 
@@ -29,9 +30,11 @@ app.use(cookieParser());
 dbConnect(process.env.MONGO_URI);
 
 
-//creating fake users
+//creating fake data
 // createUser(10);  //use only when use to cvreate fake users
-
+// createSingleChats(10); //use only when use to create fake chats
+// createGroupChats(10); //use only when use to create fake group chats
+// createMessagesInAChat("67697f3b9a4d4b8e38a4c225" , 50);
 
 // app.get("/" , (req , resp)=>{
 //     resp.send("Hello World");
