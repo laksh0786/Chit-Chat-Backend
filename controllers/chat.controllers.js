@@ -9,6 +9,7 @@ import { ErrorHandler } from "../utils/errorHandler.js";
 import { emitEvent } from "../utils/emitEvent.js";
 import { ALERT, NEW_ATTACHMENT, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/event.js";
 import { getOtherMember } from "../lib/helper.js";
+import { deleteFileFromCloudinary } from "../utils/cloudinary.js";
 
 
 //creating a new group chat
@@ -393,7 +394,6 @@ const sendAttachmentController = TryCatch(
 )
 
 
-
 //get messages controller
 
 
@@ -442,6 +442,111 @@ const getChatDetailsController = TryCatch(
 )
 
 
+//rename the group chat controller
+const renameGroupChatController = TryCatch(
+    async (req , resp , next)=>{
+
+        const chatId = req.params.id;
+        const {name} = req.body;
+
+        if(!name){
+            return next(new ErrorHandler("Please provide name", 400));
+        }
+
+        const chat = await Chat.findById(chatId);
+
+        if(!chat){
+            return next(new ErrorHandler("Chat not found", 404));
+        }
+
+        if(!chat.groupChat){
+            return next(new ErrorHandler("This is not a group chat", 400));
+        }
+
+        if(chat.creator.toString() !== req.user.toString()){
+            return next(new ErrorHandler("You are not authorized to rename the chat", 403));
+        }
+
+        //updating the name of the chat
+        chat.name = name;
+
+        
+        //saving the chat
+        await chat.save();
+
+        //emit the refetch chat event to all the members of the chat
+        emitEvent(req , REFETCH_CHATS , chat.members);
+
+        return resp.status(200).json({
+            success:true,
+            message:"Group renamed successfully"
+        })
+
+    }
+);
+
+
+//delete chat controller
+const deleteChatController = TryCatch(
+    async (req , resp , next)=>{
+
+        const chatId = req.params.id;
+
+        //finding the chat by id
+        const chat = await Chat.findById(chatId);
+
+        //if chat is not found then throw an error
+        if(!chat){
+            return next(new ErrorHandler("Chat not found", 404));
+        }
+
+        const members = chat.members;
+
+        if(chat.groupChat &&  chat.creator.toString() !== req.user.toString()){
+            return next(new ErrorHandler("You are not authorized to delete the chat", 403));
+        }
+
+        if(!chat.groupChat && !chat.members.includes(req.user.toString())){
+            return next(new ErrorHandler("You are not authorized to delete the chat", 403));
+        }
+
+        //delete all the messages and attachments on the cloudinary of the chat
+
+        //finding all the messages with attachments in the chat
+        const messageWithAttachments = await Message.find({
+            chat:chatId,
+            attachments:{$exists:true , $ne:[]} //attachments exists and not qual to empty array
+        });
+
+        const public_ids = [];
+
+        //pushing all the public ids of the attachments of all the messages in the chat to the public_ids array
+        messageWithAttachments.forEach(({attachments})=>{
+            attachments.forEach(({ public_id })=>{
+                public_ids.push(public_id);
+            })
+        })
+
+        //deleting the chat , messages and attachments from the cloudinary
+        await Promise.all([
+            deleteFileFromCloudinary(public_ids),
+            chat.deleteOne(),
+            Message.deleteMany({chat:chatId})
+        ])
+
+        //emitting the event
+        emitEvent(req , REFETCH_CHATS , members);
+
+        //returning the response
+        return resp.status(200).json({
+            success:true,
+            message:"Chat deleted successfully"
+        })
+
+
+    }
+)
+
 
 
 export {
@@ -452,5 +557,7 @@ export {
     removeGroupMemberController,
     leaveGroupChatController,
     sendAttachmentController,
-    getChatDetailsController
+    getChatDetailsController,
+    renameGroupChatController,
+    deleteChatController
 };
