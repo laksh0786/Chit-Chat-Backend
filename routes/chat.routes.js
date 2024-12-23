@@ -7,7 +7,16 @@ const router = express.Router();
 
 
 //importing the controller
-import {newGroupChatController , getMyChatsController, getMyGroupsController , addGroupMembersController, removeGroupMemberController, leaveGroupChatController, sendAttachmentController} from "../controllers/chat.controllers.js";
+import{
+    newGroupChatController, 
+    getMyChatsController, 
+    getMyGroupsController, 
+    addGroupMembersController, 
+    removeGroupMemberController, 
+    leaveGroupChatController, 
+    sendAttachmentController, 
+    getChatDetailsController
+} from "../controllers/chat.controllers.js";
 
 
 
@@ -28,6 +37,18 @@ router.put("/remove-group-member" , removeGroupMemberController);
 router.delete("/leave-group-chat/:id" , leaveGroupChatController);
 
 router.post("/send-attachments", attachmentsMulter, sendAttachmentController);
+
+
+//this is called as route chaining where we can chain same route with different methods
+
+//get chat details , rename chat , delete chat
+router.route("/:id").get(getChatDetailsController).put().delete();
+
+
+//the above is equivalent to the below code
+// router.get("/:id" , fun1);
+// router.put("/:id" , fun2);
+// router.delete("/:id", fun3);
 
 
 

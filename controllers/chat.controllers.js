@@ -397,7 +397,51 @@ const sendAttachmentController = TryCatch(
 //get messages controller
 
 
-//get chat details , rename , delete controller
+//get chat details 
+const getChatDetailsController = TryCatch(
+    async (req , resp , next)=>{
+
+        if(req.query.populate === "true"){
+
+            //lean method is used to convert the mongoose document to plain javascript object
+            const chat = await Chat.findById(req.params.id).populate("members", "name avatar").lean();
+
+            if(!chat){
+                return next(new ErrorHandler("Chat not found", 404));
+            }
+
+            //without lean method we cannot modify the object unless we convert it to plain javascript object or change in the db
+            chat.members = chat.members.map(({_id , name , avatar})=>{
+                return { 
+                    _id,
+                    name,
+                    avatar:avatar.url
+                }
+            })
+
+            return resp.status(200).json({
+                success:true,
+                chat
+            })
+
+        } else{
+
+            const chat = await Chat.findById(req.params.id);
+
+            if(!chat){
+                return next(new ErrorHandler("Chat not found", 404));
+            }
+
+            return resp.status(200).json({
+                success:true,
+                chat
+            })
+
+        }
+    }
+)
+
+
 
 
 export {
@@ -407,5 +451,6 @@ export {
     addGroupMembersController,
     removeGroupMemberController,
     leaveGroupChatController,
-    sendAttachmentController
+    sendAttachmentController,
+    getChatDetailsController
 };
