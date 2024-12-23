@@ -9,5 +9,9 @@ const multerUpload = multer({
 
 const singleAvatar = multerUpload.single("avatar");
 
+//to upload multiple files we use array method and max count of files is 10
+const attachmentsMulter = multerUpload.array("files" , 10);
+
 
 export default singleAvatar;
+export {attachmentsMulter};

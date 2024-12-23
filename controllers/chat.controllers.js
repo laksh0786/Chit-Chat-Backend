@@ -1,12 +1,13 @@
 //importing the modules
 import Chat from "../models/chat.model.js";
 import User from "../models/user.model.js";
+import Message from "../models/message.model.js"
 
 //importing the modules and files
 import { TryCatch } from "../middlewares/error.js";
 import { ErrorHandler } from "../utils/errorHandler.js";
 import { emitEvent } from "../utils/emitEvent.js";
-import { ALERT, REFETCH_CHATS } from "../constants/event.js";
+import { ALERT, NEW_ATTACHMENT, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/event.js";
 import { getOtherMember } from "../lib/helper.js";
 
 
@@ -326,6 +327,70 @@ const leaveGroupChatController = TryCatch(
 
 
 //send attachment controller
+const sendAttachmentController = TryCatch(
+    async (req , resp , next)=>{
+
+        const {chatId} = req.body;
+
+        const [chat , user] = await Promise.all([
+            Chat.findById(chatId),
+            User.findById(req.user , "name avatar")
+        ]);
+
+        if(!chat){
+            return next(new ErrorHandler("Chat not found", 404));
+        }
+
+        const files = req.files || [];
+
+        if(files.length < 1){
+            return next(new ErrorHandler("Please provide attachments", 400));
+        }
+
+
+        //Upload files to cloudinary 
+        const attachments = []
+
+
+        //message for real time 
+        const messageRealTime = {
+            sender : {
+                _id:user._id,
+                name:user.name,
+                avatar:user.avatar.url  //optional but can be included
+            },
+            chat : chatId,
+            attachments,
+            content:"",
+        }
+
+
+        //message for the db
+        const messageDb = {
+            sender : req.user,
+            chat : chatId,
+            attachments,
+            content:"",
+        }
+
+        //saving the message to the db
+        const message = await Message.create(messageDb);
+
+        //emitting the new attachment event to all the members of the chat
+        emitEvent(req , NEW_ATTACHMENT , chat.members , {
+            message:messageRealTime,
+            chatId
+        });
+
+        //emitting the new message alert to all the members of the chat
+        emitEvent(req , NEW_MESSAGE_ALERT , chat.members , {chatId});
+
+        return resp.status(200).json({
+            success:true,
+            message
+        })
+    }
+)
 
 
 
@@ -342,4 +407,5 @@ export {
     addGroupMembersController,
     removeGroupMemberController,
     leaveGroupChatController,
+    sendAttachmentController
 };
