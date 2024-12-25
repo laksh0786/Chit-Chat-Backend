@@ -18,10 +18,6 @@ const newGroupChatController = TryCatch(
 
         const { name, members } = req.body;
 
-        if (members.length < 3) {
-            return next(new ErrorHandler("Group chat must have atleast 2 members", 400));
-        }
-
         const allMembers = [...members, req.user];
 
         const groupChatDetails = await Chat.create({
@@ -125,10 +121,6 @@ const addGroupMembersController = TryCatch(
 
         const { chatId, members } = req.body;
 
-        if (!chatId || !members || members.length === 0) {
-            return next(new ErrorHandler("Please provide chatId and members", 400));
-        }
-
         const chat = await Chat.findById(chatId);
 
         if (!chat) {
@@ -188,10 +180,10 @@ const removeGroupMemberController = TryCatch(
         //getting the userId and chatId from the body
         const { userId, chatId } = req.body;
 
-        //if the userId or chatId is not provided then throw an error
-        if (!userId || !chatId) {
-            return next(new ErrorHandler("Please provide userId and chatId", 400));
-        }
+        //if the userId or chatId is not provided then throw an error done in middleware itself in the route
+        // if (!userId || !chatId) {
+        //     return next(new ErrorHandler("Please provide userId and chatId", 400));
+        // }
 
         //finding the chat and user by their id
         const [chat, removedUser] = await Promise.all([
@@ -261,9 +253,10 @@ const leaveGroupChatController = TryCatch(
 
         const chatId = req.params.id;
 
-        if(!chatId){
-            return next(new ErrorHandler("Please provide chatId", 400));
-        }
+        //done in middleware itself in the route
+        // if(!chatId){
+        //     return next(new ErrorHandler("Please provide chatId", 400));
+        // }
 
         const chat = await Chat.findById(chatId);
 
@@ -344,8 +337,12 @@ const sendAttachmentController = TryCatch(
 
         const files = req.files || [];
 
-        if(files.length < 1){
+        // Validate files
+        if (!files || files.length < 1) {
             return next(new ErrorHandler("Please provide attachments", 400));
+        }
+        if (files.length > 5) {
+            return next(new ErrorHandler("You can upload up to 5 attachments", 400));
         }
 
 
