@@ -1,5 +1,6 @@
 //importing the  models
 import User from "../models/user.model.js";
+import Chat from "../models/chat.model.js";
 
 //importing the modules and files
 import bcrypt from 'bcrypt';
@@ -65,7 +66,7 @@ export const loginController = TryCatch(
 
 //getting my profile
 export const getPersonalProfile = TryCatch(
-    async (req, resp , next) => {
+    async (req, resp, next) => {
 
         const user = await User.findById(req.user);
         console.log(user);
@@ -80,28 +81,56 @@ export const getPersonalProfile = TryCatch(
 
 //logout the user controller
 export const logoutController = TryCatch(
-    async (req , resp)=>{
-        return resp.status(200).cookie("token" , null , {
+    async (req, resp) => {
+        return resp.status(200).cookie("token", null, {
             ...cookieOptions,
-            maxAge:0
+            maxAge: 0
         }).json({
-            success:true,
-            message:"User Logged Out Successfully"
+            success: true,
+            message: "User Logged Out Successfully"
         })
     }
-) 
+)
 
 
 //search the user controller
 export const searchUserController = TryCatch(
-    
-    async (req , resp , next)=>{
 
-        const {name} = req.query;
+    async (req, resp, next) => {
+
+        const { name = "" } = req.query;
+
+        //finding all my chats which are not group chats and i am a member of that chat
+        const myChats = await Chat.find({
+            groupChat: false,
+            members: { $in: [req.user] }
+        });
+
+        //fetching all the friends including me or users with whom i have chatted with including me
+        const allFriends = myChats.map((chat) => {
+            return chat.members;
+        }).flat()  //flat method is used to convert 2d array to 1d array and parameter is the depth of the array which means how many levels of array to flatten
+
+
+        //finding all the users who are not in the above array i.e all the users who are not my friends
+        const usersExceptMeAndMyFriends = await User.find({
+            _id: { $nin: allFriends },
+            name: { $regex: name, $options: "i" } //$regex is used to search for the name pattern and $options is used to make the search case insensitive
+        });
+
+        //modifying the response to only send the required fields of all not friends
+        const allNotFriends =  usersExceptMeAndMyFriends.map(({_id , name , avatar})=>{
+            return {
+                _id,
+                name,
+                avatar:avatar.url
+            }
+        })
+
 
         return resp.status(200).json({
-            success:true,
-            message:`Searching for ${name}`
+            success: true,
+            users:allNotFriends
         })
 
     }
