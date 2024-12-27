@@ -9,7 +9,10 @@ import { createUser } from "./seeders/user.js";
 //importing the routes
 import userRoutes from "./routes/user.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
-import { createGroupChats, createMessagesInAChat, createSingleChats } from "./seeders/chat.js";
+import adminRoutes from "./routes/admin.routes.js";
+
+
+// import { createGroupChats, createMessagesInAChat, createSingleChats } from "./seeders/chat.js";
 
 
 
@@ -44,6 +47,7 @@ dbConnect(process.env.MONGO_URI);
 //mounting the router
 app.use("/user" , userRoutes);
 app.use("/chat" , chatRoutes);
+app.use("/admin" , adminRoutes);
 
 
 
