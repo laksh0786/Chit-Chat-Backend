@@ -61,6 +61,7 @@ const getMyChatsController = TryCatch(
                     return avatar.url
                 }) : [getOtherMember(members, req.user).avatar.url],
 
+                //removing the current user from the members array
                 members: members.reduce((prev, curr) => {
 
                     if (curr._id.toString() !== req.user.toString()) {
@@ -100,9 +101,7 @@ const getMyGroupsController = TryCatch(
                 _id,
                 groupChat,
                 name,
-                avatar: members.slice(0, 3).map(({ avatar }) => {
-                    return avatar.url
-                })
+                avatar: members.slice(0, 3).map(({ avatar }) => avatar.url)
             }
         })
 
