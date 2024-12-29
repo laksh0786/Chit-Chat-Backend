@@ -11,6 +11,7 @@ import {
     allChatController,
     allMessagesController,
     allUsersController,
+    getAdminDataController,
     getDashboardDataController
 } from '../controllers/admin.controllers.js';
 
@@ -29,7 +30,7 @@ router.get("/logout" , adminLogoutController);
 //only admin can access the below routes so we will use the admin auth middleware
 router.use(isAdminAuthenticated);
 
-router.get("/");
+router.get("/", getAdminDataController);
 
 router.get("/users", allUsersController);
 router.get("/chats", allChatController);

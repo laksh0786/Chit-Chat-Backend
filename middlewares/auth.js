@@ -1,6 +1,7 @@
 import { ErrorHandler } from "../utils/errorHandler.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { adminSecretKey } from "../app.js";
 dotenv.config({});
 
 const isAuth = (req, resp, next) => {
@@ -36,7 +37,7 @@ const isAdminAuthenticated = (req , resp , next)=>{
     const {secretKey} = jwt.verify(token , process.env.JWT_SECRET);  //iat is the time when the token was issued and exp is the time when the token will expire and secret key is the secret key
 
     //checkig if the secret key is correct or not
-    const isMatch = secretKey === process.env.ADMIN_SECRET_KEY;
+    const isMatch = secretKey === adminSecretKey;
 
 
     //if the secret key is not correct then return the error

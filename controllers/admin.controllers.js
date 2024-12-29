@@ -11,6 +11,7 @@ import { TryCatch } from '../middlewares/error.js'
 import { ErrorHandler } from '../utils/errorHandler.js';
 import jwt from 'jsonwebtoken';
 import { cookieOptions } from '../constants/cookieOptions.js';
+import { adminSecretKey as ADMIN_KEY } from '../app.js';
 
 
 //admin login controller
@@ -21,7 +22,7 @@ const adminLoginController = TryCatch(
         const { secretKey } = req.body;
 
         //original secret key
-        const amdinSecretKey = process.env.ADMIN_SECRET_KEY;
+        const amdinSecretKey = ADMIN_KEY;
 
         //checking if the secret key is correct or not
         const isMatch = secretKey === amdinSecretKey;
@@ -95,6 +96,16 @@ const allUsersController = TryCatch(
             users: transformedUsers
         })
 
+    }
+)
+
+
+//get admin data
+const getAdminDataController = TryCatch(
+    async (req , resp , next)=>{
+        return resp.status(200).json({
+            admin:true
+        })
     }
 )
 
@@ -224,7 +235,7 @@ const getDashboardDataController = TryCatch(
 
             //getting the difference in days between the current date and the message created date
             const index = Math.floor((today.getTime() - message.createdAt.getTime()) / dayInMilliseconds);
-            console.log(index);
+            // console.log(index);
 
             //incrementing the count of messages on that day by 1 by subtracting the index from 6 as the index is in reverse order : as we get the index from current date to past date so we need to subtract it from 6 to get the correct index
 
@@ -255,5 +266,6 @@ export {
     allMessagesController,
     getDashboardDataController,
     adminLoginController,
-    adminLogoutController
+    adminLogoutController,
+    getAdminDataController
 };

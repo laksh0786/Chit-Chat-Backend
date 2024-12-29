@@ -21,6 +21,13 @@ export const newUserController = TryCatch(
         //fetching the data from the request body
         const { name, email, password, bio } = req.body;
 
+        const file = req.file;
+        // console.log(file);
+
+        if(!file){
+            return next(new ErrorHandler("Please Upload Avatar", 400));
+        }
+
         const avatar = {
             public_id: "sndisnd",
             url: "https://res.cloudinary.com/djxkexzvz/image/upload/v1633660137/avatars/avataaars"

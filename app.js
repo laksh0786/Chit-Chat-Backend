@@ -11,6 +11,9 @@ import userRoutes from "./routes/user.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 
+const node_env = process.env.NODE_ENV.trim() || "PRODUCTION";
+const adminSecretKey = process.env.ADMIN_SECRET_KEY.trim() || "admin"
+
 
 // import { createGroupChats, createMessagesInAChat, createSingleChats } from "./seeders/chat.js";
 
@@ -58,5 +61,8 @@ app.use(errorMiddleware)
 
 const port = process.env.PORT || 3000;
 app.listen(port , ()=>{
-    console.log(`Server is running on port ${port}`);
+    console.log(`Server is running on port ${port} in ${node_env} mode`);
 })
+
+
+export {node_env , adminSecretKey};
