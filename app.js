@@ -74,9 +74,9 @@ dbConnect(process.env.MONGO_URI);
 
 
 //mounting the router
-app.use("/user", userRoutes);
-app.use("/chat", chatRoutes);
-app.use("/admin", adminRoutes);
+app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/chat", chatRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 
 
