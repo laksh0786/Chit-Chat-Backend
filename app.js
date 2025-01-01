@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "./constants/event.js";
 import { v4 as uuid } from "uuid"
 import { getSockets } from "./lib/helper.js";
+import cors from "cors";
 
 
 //importing the routes
@@ -56,6 +57,10 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(cors({
+    origin: ["http://localhost:5173", "http://localhost:4173", process.env.CLIENT_URL],
+    credentials: true
+}));
 
 
 //connecting to the database
@@ -68,9 +73,9 @@ dbConnect(process.env.MONGO_URI);
 // createGroupChats(10); //use only when use to create fake group chats
 // createMessagesInAChat("67697f3b9a4d4b8e38a4c225" , 50);
 
-// app.get("/" , (req , resp)=>{
-//     resp.send("Hello World");
-// })
+app.get("/", (req, resp) => {
+    resp.send("Hello World");
+})
 
 
 //mounting the router
@@ -80,14 +85,9 @@ app.use("/api/v1/admin", adminRoutes);
 
 
 
-app.get("/", (req, resp) => {
-    resp.send("Hello World");
-})
-
-
 //creating the socket middleware for authentication
-io.use((socket , next)=>{
-    
+io.use((socket, next) => {
+
 })
 
 
@@ -129,7 +129,7 @@ io.on("connection", (socket) => {
         const membersSocket = getSockets(members);
 
         //emitting the NEW_MESSAGE event to all the members of the chat
-        io.to(membersSocket).emit(NEW_MESSAGE , {
+        io.to(membersSocket).emit(NEW_MESSAGE, {
             chatId,
             message: messageForRealTime
         });
@@ -139,17 +139,17 @@ io.on("connection", (socket) => {
             chatId,
         })
 
-        try{
+        try {
             //saving the message to the database
             await Message.create(messageForDB);
-        } catch(err){
+        } catch (err) {
             console.log(err);
         }
 
     })
 
     socket.on("disconnect", () => {
-        
+
         //deleting the user id from the map when the user is disconnected
         userSocketIds.delete(user._id.toString());
 
