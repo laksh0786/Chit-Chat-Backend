@@ -12,6 +12,7 @@ import { cookieOptions } from "../constants/cookieOptions.js";
 import { emitEvent } from "../utils/emitEvent.js"
 import { NEW_REQUEST, REFETCH_CHATS } from "../constants/event.js";
 import { getOtherMember } from "../lib/helper.js";
+import { uploadFilesToCloudinary } from "../utils/cloudinary.js";
 
 
 //creating a new user and saving it to the database and save in cookie
@@ -21,16 +22,28 @@ export const newUserController = TryCatch(
         //fetching the data from the request body
         const { name, email, password, bio } = req.body;
 
+        //checking if the user already exists
+        const userExists = await User.findOne({ email });
+
+        if (userExists) {
+            return next(new ErrorHandler("User Already Exists", 400));
+        }
+
         const file = req.file;
-        // console.log(file);
+        // console.log("FIle " , file);
 
         if(!file){
             return next(new ErrorHandler("Please Upload Avatar", 400));
         }
 
+        //uploading the file to the cloudinary
+        const result = await uploadFilesToCloudinary([file]);
+
+        // console.log(result)
+
         const avatar = {
-            public_id: "sndisnd",
-            url: "https://res.cloudinary.com/djxkexzvz/image/upload/v1633660137/avatars/avataaars"
+            public_id: result[0].public_id,
+            url: result[0].url
         };
 
         //hashing the password before saving it to the database

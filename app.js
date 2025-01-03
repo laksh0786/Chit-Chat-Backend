@@ -9,6 +9,7 @@ import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "./constants/event.js";
 import { v4 as uuid } from "uuid"
 import { getSockets } from "./lib/helper.js";
 import cors from "cors";
+import { cloudinary } from "./config/cloudinary.js";
 
 
 //importing the routes
@@ -48,7 +49,7 @@ const server = createServer(app);
 //creating the socket server
 const io = new Server(server, {
     cors: {
-        origin: "*", //allowing all the origins
+        origin: ["http://localhost:5173", "http://localhost:4173", process.env.CLIENT_URL], //allowing all the origins
         credentials: true //allowing credentials means allowing cookies
     }
 })
@@ -59,7 +60,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
     origin: ["http://localhost:5173", "http://localhost:4173", process.env.CLIENT_URL],
-    credentials: true
+    credentials: true  //allowing credentials means allowing cookies to be sent
 }));
 
 
