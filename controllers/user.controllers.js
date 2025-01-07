@@ -32,7 +32,7 @@ export const newUserController = TryCatch(
         const file = req.file;
         // console.log("FIle " , file);
 
-        if(!file){
+        if (!file) {
             return next(new ErrorHandler("Please Upload Avatar", 400));
         }
 
@@ -127,7 +127,13 @@ export const searchUserController = TryCatch(
 
     async (req, resp, next) => {
 
-        const { name = "" } = req.query;
+        const { page = 1 } = req.query;
+        const name = req.query.name?.trim() || "" ;
+        
+        const resPerPage = 6;
+        const skip = (page - 1) * resPerPage;
+
+        // console.log(name, page);
 
         //finding all my chats which are not group chats and i am a member of that chat
         const myChats = await Chat.find({
@@ -135,31 +141,43 @@ export const searchUserController = TryCatch(
             members: { $in: [req.user] }
         });
 
-        //fetching all the friends including me or users with whom i have chatted with including me
-        const allFriends = myChats.map((chat) => {
-            return chat.members;
-        }).flat()  //flat method is used to convert 2d array to 1d array and parameter is the depth of the array which means how many levels of array to flatten
+        //fetching all the friends including me or users with whom i have chatted with
+        const allFriendsSet = new Set(myChats.map((chat) => chat.members).flat());  //flat is used to convert 2d array to 1d array
+
+        allFriendsSet.add(req.user); // Add the requesting user to the set to exclude them
 
 
         //finding all the users who are not in the above array i.e all the users who are not my friends
-        const usersExceptMeAndMyFriends = await User.find({
-            _id: { $nin: allFriends },
-            name: { $regex: name, $options: "i" } //$regex is used to search for the name pattern and $options is used to make the search case insensitive
-        });
+        const [usersExceptMeAndMyFriends, totalUsers] = await Promise.all([
+            User.find({
+                _id: { $nin: Array.from(allFriendsSet) },
+                name: { $regex: name, $options: "i" } //$regex is used to search for the name pattern and $options is used to make the search case insensitive
+            }).skip(skip).limit(resPerPage).select("_id name avatar"),
+
+            User.countDocuments({
+                _id: { $nin: Array.from(allFriendsSet) },
+                name: { $regex: name, $options: "i" }
+            })
+
+        ])
+
 
         //modifying the response to only send the required fields of all not friends
         const allNotFriends = usersExceptMeAndMyFriends.map(({ _id, name, avatar }) => {
             return {
                 _id,
                 name,
-                avatar: avatar.url
+                avatar: avatar.url || ""
             }
         })
+
+        const totalPages = Math.ceil(totalUsers / resPerPage) || 0;  //total number of pages required to show all the messages
 
 
         return resp.status(200).json({
             success: true,
-            users: allNotFriends
+            users: allNotFriends,
+            totalPages
         })
 
     }
@@ -341,7 +359,7 @@ export const getMyFriendsController = TryCatch(
             const chat = await Chat.findById(chatId);
 
             //if chat is not found then return error
-            if(!chat){
+            if (!chat) {
                 return next(new ErrorHandler("Chat Not Found", 404));
             }
 
