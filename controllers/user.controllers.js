@@ -130,7 +130,7 @@ export const searchUserController = TryCatch(
         const { page = 1 } = req.query;
         const name = req.query.name?.trim() || "" ;
         
-        const resPerPage = 6;
+        const resPerPage = 5;
         const skip = (page - 1) * resPerPage;
 
         // console.log(name, page);
