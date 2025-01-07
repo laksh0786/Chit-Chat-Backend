@@ -199,7 +199,8 @@ export const sendFriendRequestController = TryCatch(
 
         //checking if user is already a friend
         const chat = await Chat.findOne({
-            members: { $all: [userId, req.user] }
+            members: {$all: [userId, req.user] },
+            groupChat: false //checking if the chat is not a group chat i.e. a personal chat
         })
 
         if (chat) {
