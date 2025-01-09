@@ -22,6 +22,7 @@ import adminRoutes from "./routes/admin.routes.js";
 
 //importing the models
 import Message from "./models/message.model.js";
+import { socketAuthenticator } from "./middlewares/auth.js";
 
 
 const node_env = process.env.NODE_ENV.trim() || "PRODUCTION";
@@ -84,19 +85,22 @@ app.use("/api/v1/admin", adminRoutes);
 //creating the socket middleware for authentication
 io.use((socket, next) => {
 
+    cookieParser()(socket.request, socket.request.res, async (err) => {
+        await socketAuthenticator(err, socket, next);
+    });
+
 })
 
 
 //socket connection
 io.on("connection", (socket) => {
 
-    const user = {
-        _id: "dbnubdowqbdw",
-        name: "Lakshay"
-    }
+    const user = socket.user;
+
+    // console.log(user);
 
     //mapping the user id with the socket id using the set method of the map
-    userSocketIds.set(user._id.toString(), socket.id);
+    userSocketIds.set(user?._id.toString(), socket.id);
 
     // console.log("User connected : ", socket.id);
     console.log(userSocketIds);

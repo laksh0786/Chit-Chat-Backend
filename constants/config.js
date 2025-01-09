@@ -3,5 +3,7 @@ const corsOptions = {
     credentials: true  //allowing credentials means allowing cookies to be sent
 }
 
+const userToken = "token"; //token for the user login
 
-export {corsOptions};
+
+export {corsOptions, userToken};
