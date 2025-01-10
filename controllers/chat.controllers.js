@@ -9,7 +9,7 @@ import { ErrorHandler } from "../utils/errorHandler.js";
 import { emitEvent } from "../utils/emitEvent.js";
 import { ALERT, NEW_ATTACHMENT, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/event.js";
 import { getOtherMember } from "../lib/helper.js";
-import { deleteFileFromCloudinary } from "../utils/cloudinary.js";
+import { deleteFileFromCloudinary, uploadFilesToCloudinary } from "../utils/cloudinary.js";
 
 
 //creating a new group chat
@@ -345,9 +345,7 @@ const sendAttachmentController = TryCatch(
         }
 
 
-        //Upload files to cloudinary 
-        const attachments = []
-
+        const attachments = await uploadFilesToCloudinary(files);
 
         //message for real time 
         const messageRealTime = {

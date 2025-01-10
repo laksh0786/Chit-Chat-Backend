@@ -106,6 +106,7 @@ io.on("connection", (socket) => {
     console.log(userSocketIds);
 
     //listening for new message event i.e. when a new message is sent by the client then this event will be emitted
+    //first argument is the event name and the second argument is the callback function which will be called when the event is emitted and it will receive the data sent by the client as an argument
     socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
 
         const messageForRealTime = {
@@ -124,8 +125,10 @@ io.on("connection", (socket) => {
             sender: user._id,
             chat: chatId,
         }
+        
+        console.log("Emitting ", messageForRealTime)
 
-        //getting the user socket ids
+        //getting the user socket ids in the array
         const membersSocket = getSockets(members);
 
         //emitting the NEW_MESSAGE event to all the members of the chat
