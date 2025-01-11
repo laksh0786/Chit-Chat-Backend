@@ -53,6 +53,9 @@ const io = new Server(server, {
     cors: corsOptions
 })
 
+//setting an instance of the io to the app so that we can use it in the controllers
+app.set("io", io); 
+
 //using middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -125,7 +128,7 @@ io.on("connection", (socket) => {
             sender: user._id,
             chat: chatId,
         }
-        
+
         console.log("Emitting ", messageForRealTime)
 
         //getting the user socket ids in the array

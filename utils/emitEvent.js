@@ -1,3 +1,12 @@
+import { getSockets } from "../lib/helper.js"
+
 export const emitEvent = (req, event, users, data) => {
-    console.log("Event emitted : " , event);
+    
+    const io = req.app.get("io");
+    
+
+    const userSockets = getSockets(users);
+
+    io.to(userSockets).emit(event , data)
+    
 }

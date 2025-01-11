@@ -7,7 +7,7 @@ import Message from "../models/message.model.js"
 import { TryCatch } from "../middlewares/error.js";
 import { ErrorHandler } from "../utils/errorHandler.js";
 import { emitEvent } from "../utils/emitEvent.js";
-import { ALERT, NEW_ATTACHMENT, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/event.js";
+import { ALERT, NEW_MESSAGE, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/event.js";
 import { getOtherMember } from "../lib/helper.js";
 import { deleteFileFromCloudinary, uploadFilesToCloudinary } from "../utils/cloudinary.js";
 
@@ -371,8 +371,10 @@ const sendAttachmentController = TryCatch(
         //saving the message to the db
         const message = await Message.create(messageDb);
 
+        console.log(chat.members);
+
         //emitting the new attachment event to all the members of the chat
-        emitEvent(req , NEW_ATTACHMENT , chat.members , {
+        emitEvent(req , NEW_MESSAGE , chat.members , {
             message:messageRealTime,
             chatId
         });
