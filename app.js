@@ -5,7 +5,7 @@ import { errorMiddleware } from "./middlewares/error.js";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "./constants/event.js";
+import { NEW_MESSAGE, NEW_MESSAGE_ALERT, START_TYPING, STOP_TYPING } from "./constants/event.js";
 import { v4 as uuid } from "uuid"
 import { getSockets } from "./lib/helper.js";
 import cors from "cors";
@@ -54,7 +54,7 @@ const io = new Server(server, {
 })
 
 //setting an instance of the io to the app so that we can use it in the controllers
-app.set("io", io); 
+app.set("io", io);
 
 //using middleware
 app.use(express.json());
@@ -129,7 +129,7 @@ io.on("connection", (socket) => {
             chat: chatId,
         }
 
-        console.log("Emitting ", messageForRealTime)
+        // console.log("Emitting ", messageForRealTime)
 
         //getting the user socket ids in the array
         const membersSocket = getSockets(members);
@@ -154,6 +154,30 @@ io.on("connection", (socket) => {
 
     })
 
+    //listening for the start typing event
+    socket.on(START_TYPING, ({ members, chatId }) => {
+
+        console.log("Typing event received", members, chatId);
+        
+        const membersSocket = getSockets(members);
+
+        //socket.to and io.to difference is that socket.to will emit the event to all the members of the chat except the sender and io.to will emit the event to all the members of the chat including the sender
+        socket.to(membersSocket).emit(START_TYPING, {chatId});
+    
+    })
+
+    //listening for the stop typing event
+    socket.on(STOP_TYPING , ({members, chatId})=>{
+
+        console.log("Stop typing event received", members, chatId);
+
+        const membersSocket = getSockets(members);
+
+        socket.to(membersSocket).emit(STOP_TYPING, {chatId});
+
+    })
+
+    //listening for the disconnect event
     socket.on("disconnect", () => {
 
         //deleting the user id from the map when the user is disconnected
