@@ -220,6 +220,7 @@ const removeGroupMemberController = TryCatch(
             return next(new ErrorHandler("User is not in the group", 400));
         }
 
+        const allChatMembers = chat.members.map((member) => member.toString());
 
         //removing the member from the chat
         chat.members = chat.members.filter((member) => member.toString() !== userId.toString());
@@ -232,7 +233,7 @@ const removeGroupMemberController = TryCatch(
         emitEvent(req, ALERT, chat.members, `${removedUser.name} removed from the group ${chat.name}`);
 
         //refetch the chats
-        emitEvent(req, REFETCH_CHATS, chat.members);
+        emitEvent(req, REFETCH_CHATS, allChatMembers);
 
 
         return resp.status(200).json({
