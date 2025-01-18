@@ -20,14 +20,16 @@ const errorMiddleware = (err , req , resp , next)=>{
     // console.log(node_env === "DEVELOPMENT" , node_env);
     // console.log(err);
 
-    return resp.status(err.statusCode).json({
+    const response = {
         success:false,
-        message:node_env === "DEVELOPMENT" ? {
-            ...err,
-            message:err.message,
-            // stack:err.stack
-        } : err.message
-    })
+        message:err.message
+    }
+
+    if(node_env === "DEVELOPMENT"){
+        response.error = err;
+    }
+
+    return resp.status(err.statusCode).json(response);
 
 }
 
