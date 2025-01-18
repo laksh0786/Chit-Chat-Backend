@@ -403,6 +403,16 @@ const getMessagesController = TryCatch(
         
         const skip = (page-1)*result_per_page;
 
+        const chat = await Chat.findById(chatId);
+
+        if(!chat){
+            return next(new ErrorHandler("Chat not found", 404));
+        }
+
+        if(!chat.members.includes(req.user.toString())){
+            return next(new ErrorHandler("You are not a member of the chat", 403));
+        }
+
         const [messages , totalMessagesCount ] = await Promise.all([
 
             Message.find({chat:chatId})
