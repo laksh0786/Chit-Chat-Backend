@@ -372,7 +372,7 @@ export const getMyFriendsController = TryCatch(
             //return the response
             return resp.status(200).json({
                 success: true,
-                afriends: availableFriends
+                friends: availableFriends
             })
 
         } else {
