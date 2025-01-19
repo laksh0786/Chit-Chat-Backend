@@ -130,7 +130,7 @@ const addGroupMembersController = TryCatch(
             return next(new ErrorHandler("This is not a group chat", 400));
         }
 
-        if (chat.creator.toString() !== req.user.toString()) {
+        if (chat.creator.toString() !== req.user.toString() && !chat.admins.includes(req.user.toString())) {
             return next(new ErrorHandler("You are not authorized to add members", 403));
         }
 
@@ -205,8 +205,8 @@ const removeGroupMemberController = TryCatch(
             return next(new ErrorHandler("This is not a group chat", 400));
         }
 
-        //if the user is not the creator of the chat then throw an error
-        if (chat.creator.toString() !== req.user.toString()) {
+        //if the user is not the creator or admin of the chat then throw an error
+        if (chat.creator.toString() !== req.user.toString() && !chat.admins.includes(req.user.toString())) {
             return next(new ErrorHandler("You are not authorized to remove members", 403));
         }
 
@@ -505,7 +505,8 @@ const renameGroupChatController = TryCatch(
             return next(new ErrorHandler("This is not a group chat", 400));
         }
 
-        if(chat.creator.toString() !== req.user.toString()){
+        //creator and admins can rename the chat
+        if(chat.creator.toString() !== req.user.toString() && !chat.admins.includes(req.user.toString())){
             return next(new ErrorHandler("You are not authorized to rename the chat", 403));
         }
 
@@ -545,7 +546,7 @@ const deleteChatController = TryCatch(
         const members = chat.members;
 
         if(chat.groupChat &&  chat.creator.toString() !== req.user.toString()){
-            return next(new ErrorHandler("You are not authorized to delete the chat", 403));
+            return next(new ErrorHandler("Only the creator can delete the group chat", 403));
         }
 
         if(!chat.groupChat && !chat.members.includes(req.user.toString())){
@@ -590,6 +591,69 @@ const deleteChatController = TryCatch(
 )
 
 
+//make user the admin controller
+const makeUserAdminController = TryCatch(
+
+    async (req, resp, next) => {
+
+        //fetching the chatId from params
+        const { chatId } = req.params;
+
+        //fetching the required data
+        const {userId} = req.body;
+
+        //finding the chat
+        const [chat, user] = await Promise.all([
+            Chat.findById(chatId),
+            User.findById(userId).select("name")
+        ]);
+
+        //if chat is not found then return error
+        if (!chat) {
+            return next(new ErrorHandler("Chat Not Found", 404));
+        }
+
+        //checking if the user is the creator of the chat
+        if (chat.creator.toString() !== req.user.toString()) {
+            return next(new ErrorHandler("You are not authorized to make user admin", 401));
+        }
+
+        //checking if the user is not in the chat
+        if (!chat.members.includes(userId)) {
+            return next(new ErrorHandler("User is not in the chat", 400));
+        }
+
+        //checking if user is an creator
+        if (chat.creator.toString() === userId) {
+            return next(new ErrorHandler("User is the creator of the chat", 400));
+        }
+
+        //checking if the user is already an admin
+        if (chat.admins.includes(userId)) {
+            return next(new ErrorHandler("User is already an admin", 400));
+        }
+
+        //adding the user to the admins array
+        chat.admins.push(userId);
+
+        //saving the chat
+        await chat.save();
+
+        //emitting the event
+        emitEvent(req, ALERT, chat.members, `${user.name} is now an group admin`);
+        emitEvent(req, REFETCH_CHATS, chat.members);
+
+        //return the response
+        return resp.status(200).json({
+            success: true,
+            message: "User is now an admin"
+        });
+
+    }
+    
+)
+
+
 
 export {
     newGroupChatController,
@@ -602,5 +666,6 @@ export {
     getMessagesController,
     getChatDetailsController,
     renameGroupChatController,
-    deleteChatController
+    deleteChatController,
+    makeUserAdminController
 };

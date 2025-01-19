@@ -128,8 +128,8 @@ export const searchUserController = TryCatch(
     async (req, resp, next) => {
 
         const { page = 1 } = req.query;
-        const name = req.query.name?.trim() || "" ;
-        
+        const name = req.query.name?.trim() || "";
+
         const resPerPage = 5;
         const skip = (page - 1) * resPerPage;
 
@@ -199,7 +199,7 @@ export const sendFriendRequestController = TryCatch(
 
         //checking if user is already a friend
         const chat = await Chat.findOne({
-            members: {$all: [userId, req.user] },
+            members: { $all: [userId, req.user] },
             groupChat: false //checking if the chat is not a group chat i.e. a personal chat
         })
 

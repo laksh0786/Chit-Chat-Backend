@@ -18,13 +18,15 @@ import {
     getChatDetailsController,
     renameGroupChatController,
     deleteChatController,
-    getMessagesController
+    getMessagesController,
+    makeUserAdminController
 } from "../controllers/chat.controllers.js";
 
 import {
     addGroupMemberValidator,
     chatIdvalidator,
     chatRenameValidator,
+    makeAdminValidator,
     newGroupChatValidator,
     removeGroupMemberValidator,
     sendAttachmentValidator,
@@ -53,6 +55,8 @@ router.delete("/leave-group-chat/:id", chatIdvalidator(), validateErrorMessage, 
 router.post("/send-attachments", attachmentsMulter, sendAttachmentValidator(), validateErrorMessage, sendAttachmentController);
 
 router.get("/messages/:id", chatIdvalidator(), validateErrorMessage, getMessagesController);
+
+router.put("/make-admin/:id" , makeAdminValidator(), validateErrorMessage, makeUserAdminController);
 
 
 //this is called as route chaining where we can chain same route with different methods
